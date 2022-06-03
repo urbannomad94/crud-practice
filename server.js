@@ -3,21 +3,21 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
 const MongoClient = require("mongodb").MongoClient;
-
-//Setting view engine to ejs
-app.set("view engine", "ejs");
+const connectionString =
+  "mongodb+srv://aidanw4:CRUDmaster@cluster0.wkfbu.mongodb.net/?retryWrites=true&w=majority";
 
 //Connect to MongoDB database
-MongoClient.connect(
-  "mongodb+srv://aidanw4:CRUDmaster@cluster0.wkfbu.mongodb.net/?retryWrites=true&w=majority",
-  {
-    useUnifiedTopology: true,
-  }
-)
+MongoClient.connect(connectionString, {
+  useUnifiedTopology: true,
+})
   .then((client) => {
     console.log("Connected to Database");
     const db = client.db("crud-practice");
     const quotesCollection = db.collection("quotes");
+
+    //Setting view engine to ejs
+    app.set("view engine", "ejs");
+
     //Using body-parser middleware to use data from form element
     app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -29,17 +29,14 @@ MongoClient.connect(
 
     //Serving up html file
     app.get("/", (req, res) => {
-      // res.sendFile(
-      //   "/Users/aidanwilliams/repos/100Devs/projects/crud-practice/index.html"
-      // );
       db.collection("quotes")
         .find()
         .toArray()
         .then((results) => {
+          console.log(results);
           res.render("index.ejs", { quotes: results });
         })
         .catch((error) => console.error(error));
-      // res.render("index.ejs", {});
     });
 
     app.put("/quotes", (req, res) => {
@@ -69,6 +66,7 @@ MongoClient.connect(
       quotesCollection
         .insertOne(req.body)
         .then((result) => {
+          console.log(result);
           res.redirect("/");
         })
         .catch((error) => console.error(error));
@@ -87,7 +85,7 @@ MongoClient.connect(
     });
 
     //Sever is listening to localhost port 3000
-    app.listen(3000, function () {
+    app.listen(3000, () => {
       console.log("listening on 3000");
     });
   })
